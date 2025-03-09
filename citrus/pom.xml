@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>de.turing85</groupId>
+        <artifactId>quarkus-camel-enrich-parent</artifactId>
+        <version>999-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>quarkus-camel-enrich-citrus</artifactId>
+    <name>quarkus-camel-enrich-citrus</name>
+
+    <properties>
+        <!-- Dependencies -->
+        <artemis.version>2.39.0</artemis.version>
+        <citrus.version>4.5.2</citrus.version>
+        <spring.version>6.2.2</spring.version>
+        <log4j2.version>2.24.0</log4j2.version>
+
+        <citrus.remote.server.url>http://localhost:4567</citrus.remote.server.url>
+    </properties>
+
+    <build>
+        <plugins>
+            <!-- phase: compile -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default-resources</id>
+                        <phase>none</phase>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default-compile</id>
+                        <phase>none</phase>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- phase: test -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default-test</id>
+                        <phase>none</phase>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- phase: package -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default-jar</id>
+                        <phase>none</phase>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- phasee: verify -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>integration-tests</id>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                        <phase>verify</phase>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.citrusframework</groupId>
+                <artifactId>citrus-bom</artifactId>
+                <version>${citrus.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.citrusframework</groupId>
+                <artifactId>citrus-remote-server</artifactId>
+                <version>${citrus-remote.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-bom</artifactId>
+                <version>${log4j2.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <!-- Logging -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j-impl</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-iostreams</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Citrus -->
+        <dependency>
+            <groupId>org.citrusframework</groupId>
+            <artifactId>citrus-base</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.citrusframework</groupId>
+            <artifactId>citrus-spring</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.citrusframework</groupId>
+            <artifactId>citrus-endpoint-catalog</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.citrusframework</groupId>
+            <artifactId>citrus-testng</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.citrusframework</groupId>
+            <artifactId>citrus-http</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.citrusframework</groupId>
+            <artifactId>citrus-jms</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.citrusframework</groupId>
+            <artifactId>citrus-validation-xml</artifactId>
+        </dependency>
+
+        <!-- ActiveMQ -->
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>artemis-jakarta-client</artifactId>
+            <version>${artemis.version}</version>
+        </dependency>
+    </dependencies>
+
+</project>

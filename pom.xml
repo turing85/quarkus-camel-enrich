@@ -1,0 +1,272 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>de.turing85</groupId>
+    <artifactId>quarkus-camel-enrich-parent</artifactId>
+    <version>999-SNAPSHOT</version>
+    <name>quarkus-camel-enrich-parent</name>
+    <description>The quarkus-camel-enrich project.</description>
+
+    <properties>
+        <!-- Plugin versions -->
+        <clean-plugin.version>3.4.1</clean-plugin.version>
+        <compiler-plugin.version>3.14.0</compiler-plugin.version>
+        <dependency-check-maven.version>12.1.0</dependency-check-maven.version>
+        <deploy-plugin.version>3.1.3</deploy-plugin.version>
+        <formatter-maven-plugin.version>2.25.0</formatter-maven-plugin.version>
+        <impsort-maven-plugin.version>1.12.0</impsort-maven-plugin.version>
+        <install-plugin.version>3.1.3</install-plugin.version>
+        <jar-plugin.version>3.4.2</jar-plugin.version>
+        <resources-plugin.version>3.3.1</resources-plugin.version>
+        <site-plugin.version>3.21.0</site-plugin.version>
+        <source-plugin.version>3.3.1</source-plugin.version>
+        <surefire-plugin.version>3.5.2</surefire-plugin.version>
+
+        <!-- Dependency versions -->
+        <lombok.version>1.18.36</lombok.version>
+
+        <!-- Project setup -->
+        <dependency-check-maven.goal>check</dependency-check-maven.goal>
+        <dependency-check-maven.skip>true</dependency-check-maven.skip>
+        <dependency-check-maven.formats>html,junit</dependency-check-maven.formats>
+
+        <formatter-maven-plugin.goal>format</formatter-maven-plugin.goal>
+        <formatter-maven-plugin.skip>false</formatter-maven-plugin.skip>
+
+        <impsort-maven-plugin.goal>sort</impsort-maven-plugin.goal>
+        <impsort-maven-plugin.skip>false</impsort-maven-plugin.skip>
+
+        <git.url.https>https://github.com/turing85/quarkus-camel-enrich.git</git.url.https>
+        <git.url.ssh>git@github.com:turing85/quarkus-camel-enrich.git</git.url.ssh>
+
+        <maven.compiler.parameters>true</maven.compiler.parameters>
+        <maven.compiler.proc>full</maven.compiler.proc>
+        <maven.compiler.release>21</maven.compiler.release>
+
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    </properties>
+
+    <packaging>pom</packaging>
+    <modules>
+        <module>app</module>
+        <module>citrus</module>
+    </modules>
+
+    <url>https://github.com/turing85/quarkus-camel-enrich</url>
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+        </repository>
+        <site>
+            <id>github.com</id>
+            <url>${project.url}</url>
+        </site>
+    </distributionManagement>
+    <scm child.scm.connection.inherit.append.path="false"
+         child.scm.developerConnection.inherit.append.path="false"
+         child.scm.url.inherit.append.path="false">
+        <connection>scm:${git.url.https}</connection>
+        <developerConnection>scm:${git.url.ssh}</developerConnection>
+        <url>${project.url}</url>
+        <tag>HEAD</tag>
+    </scm>
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-clean-plugin</artifactId>
+                    <version>${clean-plugin.version}</version>
+                </plugin>
+
+                <!-- phase: validate -->
+                <plugin>
+                    <groupId>net.revelc.code.formatter</groupId>
+                    <artifactId>formatter-maven-plugin</artifactId>
+                    <version>${formatter-maven-plugin.version}</version>
+                    <configuration>
+                        <configFile>${maven.multiModuleProjectDirectory}/google-style.xml</configFile>
+                        <lineEnding>LF</lineEnding>
+                        <skip>${formatter-maven-plugin.skip}</skip>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>${formatter-maven-plugin.goal}</goal>
+                            </goals>
+                            <phase>validate</phase>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>net.revelc.code</groupId>
+                    <artifactId>impsort-maven-plugin</artifactId>
+                    <version>${impsort-maven-plugin.version}</version>
+                    <configuration>
+                        <groups>java.,javax.,jakarta.,*</groups>
+                        <lineEnding>LF</lineEnding>
+                        <removeUnused>true</removeUnused>
+                        <skip>${impsort-maven-plugin.skip}</skip>
+                        <staticAfter>true</staticAfter>
+                        <staticGroups>java,javax.,jakarta.,*</staticGroups>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>${impsort-maven-plugin.goal}</goal>
+                            </goals>
+                            <phase>validate</phase>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <!-- phase: compile -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>${resources-plugin.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${compiler-plugin.version}</version>
+                    <configuration>
+                        <annotationProcessorPaths>
+                            <path>
+                                <groupId>org.projectlombok</groupId>
+                                <artifactId>lombok</artifactId>
+                                <version>${lombok.version}</version>
+                            </path>
+                        </annotationProcessorPaths>
+                    </configuration>
+                </plugin>
+
+                <!-- phase: test -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>${surefire-plugin.version}</version>
+                </plugin>
+
+                <!-- phase: package -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>${jar-plugin.version}</version>
+                </plugin>
+
+                <!-- phase: verify -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-failsafe-plugin</artifactId>
+                    <version>${surefire-plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>integration-test</goal>
+                                <goal>verify</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.owasp</groupId>
+                    <artifactId>dependency-check-maven</artifactId>
+                    <version>${dependency-check-maven.version}</version>
+                    <configuration>
+                        <outputDirectory>${project.build.directory}/owasp</outputDirectory>
+                        <failBuildOnCVSS>0</failBuildOnCVSS>
+                        <formats>${dependency-check-maven.formats}</formats>
+                        <skip>${dependency-check-maven.skip}</skip>
+                        <suppressionFile>src/test/resources/owasp-dependency-check.xml</suppressionFile>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>${dependency-check-maven.goal}</goal>
+                            </goals>
+                            <phase>verify</phase>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-source-plugin</artifactId>
+                    <version>${source-plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <id>attach-sources</id>
+                            <phase>verify</phase>
+                            <goals>
+                                <goal>jar-no-fork</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <!-- phase: install -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-install-plugin</artifactId>
+                    <version>${install-plugin.version}</version>
+                </plugin>
+
+                <!-- phase: deploy -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <version>${deploy-plugin.version}</version>
+                </plugin>
+
+                <!-- phase: site -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-site-plugin</artifactId>
+                    <version>${site-plugin.version}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <profiles>
+        <!-- skip profiles -->
+        <profile>
+            <id>skip-format</id>
+            <activation>
+                <property>
+                    <name>skip-format</name>
+                </property>
+            </activation>
+            <properties>
+                <formatter-maven-plugin.skip>true</formatter-maven-plugin.skip>
+                <impsort-maven-plugin.skip>true</impsort-maven-plugin.skip>
+            </properties>
+        </profile>
+    </profiles>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+</project>

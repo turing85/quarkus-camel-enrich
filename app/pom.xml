@@ -1,0 +1,441 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>de.turing85</groupId>
+        <artifactId>quarkus-camel-enrich-parent</artifactId>
+        <version>999-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>quarkus-camel-enrich</artifactId>
+    <name>quarkus-camel-enrich</name>
+
+    <properties>
+        <!-- Plugin versions -->
+        <assembly-plugin.version>3.7.1</assembly-plugin.version>
+
+        <!-- Quarkus versions -->
+        <quarkus.platform.artifact-id>quarkus-bom</quarkus.platform.artifact-id>
+        <quarkus.platform.group-id>io.quarkus.platform</quarkus.platform.group-id>
+        <quarkus.platform.version>3.8.5</quarkus.platform.version>
+
+        <!-- Camel Quarkus -->
+        <camel-quarkus-platform.group-id>io.quarkus.platform</camel-quarkus-platform.group-id>
+        <camel-quarkus.group-id>org.apache.camel.quarkus</camel-quarkus.group-id>
+        <quarkus-camel-platform.artifact-id>quarkus-camel-bom</quarkus-camel-platform.artifact-id>
+
+        <!-- Quarkiverse -->
+        <quarkus-artemis-jms.version>3.2.5</quarkus-artemis-jms.version>
+        <quarkus-pooled-jms.version>2.3.2</quarkus-pooled-jms.version>
+
+        <!-- Test dependency versions -->
+        <truth.version>1.4.4</truth.version>
+
+        <!-- Project setup -->
+        <attach-elf.skip>true</attach-elf.skip>
+        <attach-fast-jar.skip>false</attach-fast-jar.skip>
+
+        <failsafe-plugin.skip>false</failsafe-plugin.skip>
+
+        <maven.compiler.parameters>true</maven.compiler.parameters>
+        <maven.compiler.proc>full</maven.compiler.proc>
+        <maven.compiler.release>21</maven.compiler.release>
+
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+        <quarkus.bootstrap.incubating-model-resolver>true</quarkus.bootstrap.incubating-model-resolver>
+        <quarkus.container-image.additional-tags>jvm</quarkus.container-image.additional-tags>
+        <quarkus.docker.dockerfile-native-path>src/main/container/Containerfile.native-distroless</quarkus.docker.dockerfile-native-path>
+        <quarkus.docker.dockerfile-jvm-path>src/main/container/Containerfile.temurin</quarkus.docker.dockerfile-jvm-path>
+        <quarkus-maven-plugin.skip>false</quarkus-maven-plugin.skip>
+        <quarkus.native.builder-image>quay.io/quarkus/ubi-quarkus-mandrel-builder-image:23.1.6.0-Final-java21-2025-02-16@sha256:29ac340720b6a374a02cfcde8c1d85d90ed9e0fc7391468addae217689d6ede5</quarkus.native.builder-image>
+        <quarkus.native.container-build>true</quarkus.native.container-build>
+        <quarkus.package.jar.add-runner-suffix>false</quarkus.package.jar.add-runner-suffix>
+
+        <surefire-plugin.skip>false</surefire-plugin.skip>
+    </properties>
+
+    <build>
+        <plugins>
+            <!-- phase: validate -->
+            <plugin>
+                <groupId>net.revelc.code.formatter</groupId>
+                <artifactId>formatter-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>net.revelc.code</groupId>
+                <artifactId>impsort-maven-plugin</artifactId>
+            </plugin>
+
+            <!-- phase: compile -->
+            <plugin>
+                <groupId>${quarkus.platform.group-id}</groupId>
+                <artifactId>quarkus-maven-plugin</artifactId>
+                <version>${quarkus.platform.version}</version>
+                <configuration>
+                    <skip>${quarkus-maven-plugin.skip}</skip>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>build</goal>
+                            <goal>generate-code</goal>
+                            <goal>generate-code-tests</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <extensions>true</extensions>
+            </plugin>
+
+            <!-- phase: test -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <skip>${surefire-plugin.skip}</skip>
+                    <systemPropertyVariables>
+                        <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+                        <maven.home>${maven.home}</maven.home>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+
+            <!-- phase: package -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>${assembly-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>tar-gz-fast-jar</id>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <appendAssemblyId>false</appendAssemblyId>
+                            <inlineDescriptors>
+                                <inlineDescriptor>
+                                    <id>tar-gz-fast-jar</id>
+                                    <includeBaseDirectory>false</includeBaseDirectory>
+                                    <formats>
+                                        <format>tar.gz</format>
+                                    </formats>
+                                    <fileSets>
+                                        <fileSet>
+                                            <outputDirectory>/</outputDirectory>
+                                            <directory>${project.build.directory}/quarkus-app</directory>
+                                            <useDefaultExcludes>false</useDefaultExcludes>
+                                        </fileSet>
+                                    </fileSets>
+                                </inlineDescriptor>
+                            </inlineDescriptors>
+                            <skipAssembly>${attach-fast-jar.skip}</skipAssembly>
+                            <tarLongFileMode>posix</tarLongFileMode>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>tar-gz-native</id>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <appendAssemblyId>true</appendAssemblyId>
+                            <inlineDescriptors>
+                                <inlineDescriptor>
+                                    <id>elf</id>
+                                    <includeBaseDirectory>false</includeBaseDirectory>
+                                    <formats>
+                                        <format>tar.gz</format>
+                                    </formats>
+                                    <fileSets>
+                                        <fileSet>
+                                            <outputDirectory>/</outputDirectory>
+                                            <directory>${project.build.directory}</directory>
+                                            <includes>
+                                                <inclue>${project.build.finalName}-runner</inclue>
+                                                <include>*.so</include>
+                                            </includes>
+                                            <useDefaultExcludes>false</useDefaultExcludes>
+                                        </fileSet>
+                                    </fileSets>
+                                </inlineDescriptor>
+                            </inlineDescriptors>
+                            <skipAssembly>${attach-elf.skip}</skipAssembly>
+                            <tarLongFileMode>posix</tarLongFileMode>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- phase: verify -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
+                    <skip>${failsafe-plugin.skip}</skip>
+                    <systemPropertyVariables>
+                        <native.image.path>${project.build.directory}/${project.build.finalName}-runner</native.image.path>
+                        <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+                        <maven.home>${maven.home}</maven.home>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.owasp</groupId>
+                <artifactId>dependency-check-maven</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>${quarkus.platform.group-id}</groupId>
+                <artifactId>${quarkus.platform.artifact-id}</artifactId>
+                <version>${quarkus.platform.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.quarkiverse.artemis</groupId>
+                <artifactId>quarkus-artemis-bom</artifactId>
+                <version>${quarkus-artemis-jms.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>${camel-quarkus-platform.group-id}</groupId>
+                <artifactId>${quarkus-camel-platform.artifact-id}</artifactId>
+                <version>${quarkus.platform.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <!-- Quarkus dependencies -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-container-image-docker</artifactId>
+        </dependency>
+
+        <!-- JMS Setup -->
+        <dependency>
+            <groupId>io.quarkiverse.artemis</groupId>
+            <artifactId>quarkus-artemis-jms</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.quarkiverse.messaginghub</groupId>
+            <artifactId>quarkus-pooled-jms</artifactId>
+            <version>${quarkus-pooled-jms.version}</version>
+        </dependency>
+
+        <!-- Camel modules -->
+        <dependency>
+            <groupId>org.apache.camel.quarkus</groupId>
+            <artifactId>camel-quarkus-http</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel.quarkus</groupId>
+            <artifactId>camel-quarkus-jms</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel.quarkus</groupId>
+            <artifactId>camel-quarkus-log</artifactId>
+        </dependency>
+
+        <!-- Test dependencies -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-junit5</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>rest-assured</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.google.truth</groupId>
+            <artifactId>truth</artifactId>
+            <version>${truth.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <profiles>
+        <profile>
+            <id>build-container-image</id>
+            <activation>
+                <property>
+                    <name>build-container-image</name>
+                </property>
+            </activation>
+            <properties>
+                <quarkus.container-image.build>true</quarkus.container-image.build>
+                <quarkus.container-image.group>${project.groupId}</quarkus.container-image.group>
+                <quarkus.container-image.name>${project.artifactId}</quarkus.container-image.name>
+                <quarkus.container-image.tag>latest</quarkus.container-image.tag>
+            </properties>
+        </profile>
+        <profile>
+            <id>owasp</id>
+            <activation>
+                <property>
+                    <name>owasp</name>
+                </property>
+            </activation>
+            <properties>
+                <dependency-check-maven.skip>false</dependency-check-maven.skip>
+            </properties>
+        </profile>
+
+        <!-- ci-profiles -->
+        <profile>
+            <id>ci</id>
+            <activation>
+                <property>
+                    <name>ci</name>
+                </property>
+            </activation>
+            <properties>
+                <attach-elf.skip>true</attach-elf.skip>
+                <attach-fast-jar.skip>true</attach-fast-jar.skip>
+                <formatter-maven-plugin.goal>validate</formatter-maven-plugin.goal>
+                <impsort-maven-plugin.goal>check</impsort-maven-plugin.goal>
+            </properties>
+        </profile>
+        <profile>
+            <id>ci-native-compressed</id>
+            <activation>
+                <property>
+                    <name>ci-native-compressed</name>
+                </property>
+            </activation>
+            <properties>
+                <attach-elf.skip>true</attach-elf.skip>
+                <attach-fast-jar.skip>true</attach-fast-jar.skip>
+                <formatter-maven-plugin.skip>true</formatter-maven-plugin.skip>
+                <impsort-maven-plugin.skip>true</impsort-maven-plugin.skip>
+                <quarkus.container-image.additional-tags>native</quarkus.container-image.additional-tags>
+                <quarkus.docker.dockerfile-native-path>src/main/container/Containerfile.native-distroless-compressed</quarkus.docker.dockerfile-native-path>
+                <quarkus.native.enabled>true</quarkus.native.enabled>
+                <quarkus.package.jar.add-runner-suffix>true</quarkus.package.jar.add-runner-suffix>
+                <surefire-plugin.skip>true</surefire-plugin.skip>
+            </properties>
+        </profile>
+        <profile>
+            <id>ci-owasp</id>
+            <activation>
+                <property>
+                    <name>ci-owasp</name>
+                </property>
+            </activation>
+            <properties>
+                <attach-elf.skip>true</attach-elf.skip>
+                <attach-fast-jar.skip>true</attach-fast-jar.skip>
+                <dependency-check-maven.formats>junit</dependency-check-maven.formats>
+                <dependency-check-maven.skip>false</dependency-check-maven.skip>
+                <formatter-maven-plugin.skip>true</formatter-maven-plugin.skip>
+                <impsort-maven-plugin.skip>true</impsort-maven-plugin.skip>
+                <quarkus-maven-plugin.skip>true</quarkus-maven-plugin.skip>
+                <skipTests>true</skipTests>
+            </properties>
+        </profile>
+        <profile>
+            <id>ci-populate-cache</id>
+            <activation>
+                <property>
+                    <name>ci-populate-cache</name>
+                </property>
+            </activation>
+            <properties>
+                <attach-elf.skip>true</attach-elf.skip>
+                <attach-fast-jar.skip>true</attach-fast-jar.skip>
+                <dependency-check-maven.skip>true</dependency-check-maven.skip>
+                <formatter-maven-plugin.skip>true</formatter-maven-plugin.skip>
+                <impsort-maven-plugin.skip>true</impsort-maven-plugin.skip>
+            </properties>
+        </profile>
+
+        <!-- native profiles -->
+        <profile>
+            <id>native</id>
+            <activation>
+                <property>
+                    <name>native</name>
+                </property>
+            </activation>
+            <properties>
+                <attach-elf.skip>false</attach-elf.skip>
+                <attach-fast-jar.skip>true</attach-fast-jar.skip>
+                <quarkus.container-image.additional-tags>native</quarkus.container-image.additional-tags>
+                <quarkus.native.enabled>true</quarkus.native.enabled>
+                <quarkus.package.jar.add-runner-suffix>true</quarkus.package.jar.add-runner-suffix>
+            </properties>
+        </profile>
+        <profile>
+            <id>native-compressed</id>
+            <activation>
+                <property>
+                    <name>native-compressed</name>
+                </property>
+            </activation>
+            <properties>
+                <attach-elf.skip>false</attach-elf.skip>
+                <attach-fast-jar.skip>true</attach-fast-jar.skip>
+                <quarkus.container-image.additional-tags>native</quarkus.container-image.additional-tags>
+                <quarkus.docker.dockerfile-native-path>src/main/container/Containerfile.native-distroless-compressed</quarkus.docker.dockerfile-native-path>
+                <quarkus.native.enabled>true</quarkus.native.enabled>
+                <quarkus.package.jar.add-runner-suffix>true</quarkus.package.jar.add-runner-suffix>
+            </properties>
+        </profile>
+
+        <!-- skip profiles -->
+        <profile>
+            <id>skip-failsafe</id>
+            <activation>
+                <property>
+                    <name>skip-failsafe</name>
+                </property>
+            </activation>
+            <properties>
+                <failsafe-plugin.skip>true</failsafe-plugin.skip>
+            </properties>
+        </profile>
+        <profile>
+            <id>skip-format</id>
+            <activation>
+                <property>
+                    <name>skip-format</name>
+                </property>
+            </activation>
+            <properties>
+                <formatter-maven-plugin.skip>true</formatter-maven-plugin.skip>
+                <impsort-maven-plugin.skip>true</impsort-maven-plugin.skip>
+            </properties>
+        </profile>
+        <profile>
+            <id>skip-surefire</id>
+            <activation>
+                <property>
+                    <name>skip-surefire</name>
+                </property>
+            </activation>
+            <properties>
+                <surefire-plugin.skip>true</surefire-plugin.skip>
+            </properties>
+        </profile>
+    </profiles>
+</project>
